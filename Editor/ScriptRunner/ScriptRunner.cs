@@ -29,8 +29,9 @@ namespace SuperUnityBuild.BuildActions
 
         public override void PerBuildExecute(BuildReleaseType releaseType, BuildPlatform platform, BuildArchitecture architecture, BuildScriptingBackend scriptingBackend, BuildDistribution distribution, DateTime buildTime, ref BuildOptions options, string configKey, string buildPath)
         {
-            string resolvedScriptPath = BuildProject.ResolvePath(scriptPath, releaseType, platform, architecture, scriptingBackend, distribution, buildTime);
-            string resolvedScriptArgs = BuildProject.ResolvePath(scriptArguments, releaseType, platform, architecture, scriptingBackend, distribution, buildTime);
+            var resolvedScriptPath = BuildProject.ResolvePath(scriptPath, releaseType, platform, architecture, scriptingBackend, distribution, buildTime);
+            var outputPath         = scriptArguments.Replace("$BUILDPATH", buildPath);
+            var resolvedScriptArgs = BuildProject.ResolvePath(outputPath, releaseType, platform, architecture, scriptingBackend, distribution, buildTime);
 
             RunScript(resolvedScriptPath, resolvedScriptArgs);
         }
