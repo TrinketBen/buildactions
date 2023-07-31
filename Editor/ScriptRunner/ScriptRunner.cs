@@ -44,15 +44,23 @@ namespace SuperUnityBuild.BuildActions
                 return;
             }
 
-            ProcessStartInfo startInfo = new ProcessStartInfo();
-            startInfo.FileName = Path.GetFullPath(scriptPath);
+            var startInfo = new ProcessStartInfo {
+                FileName = Path.GetFullPath(scriptPath)
+            };
 
             if (!string.IsNullOrEmpty(arguments))
                 startInfo.Arguments = arguments;
 
             UnityEngine.Debug.Log($"About to start process {scriptPath} with arguments: {arguments}");
-            Process proc = Process.Start(startInfo);
-            proc.WaitForExit();
+            var process = Process.Start(startInfo);
+            if(process == null)
+                return;
+            process.StartInfo.UseShellExecute = false;
+            process.StartInfo.RedirectStandardOutput = true;
+            process.OutputDataReceived += (_, args) => UnityEngine.Debug.Log($"{scriptPath}: {args.Data}");
+            process.Start();
+            process.BeginOutputReadLine();
+            process.WaitForExit();
         }
 
         protected override void DrawProperties(SerializedObject obj)
