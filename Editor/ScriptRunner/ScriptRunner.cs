@@ -98,15 +98,14 @@ namespace SuperUnityBuild.BuildActions {
             try {
                 using var process = new Process();
                 process.StartInfo = startInfo;
-                process.OutputDataReceived += (_, args) => UnityEngine.Debug.Log($"{inScriptPath}: {args.Data}");
                 process.Start();
                 
                 var output = process.StandardOutput.ReadToEnd();
-                var error = process.StandardError.ReadToEnd();
+                var error  = process.StandardError.ReadToEnd();
                 if(!string.IsNullOrEmpty(output))
                     UnityEngine.Debug.Log(output);
                 if(!string.IsNullOrEmpty(error))
-                    UnityEngine.Debug.LogError(error);
+                    UnityEngine.Debug.Log(error);
                     
                 process.WaitForExit();
                 
