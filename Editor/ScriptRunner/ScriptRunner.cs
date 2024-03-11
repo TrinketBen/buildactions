@@ -37,7 +37,7 @@ namespace SuperUnityBuild.BuildActions {
             base.DrawProperties(obj);
 
             if(_keychains == null) {
-                _keychains = BuildSettings.projectConfigurations.BuildAllKeychains();
+                _keychains = BuildSettings.projectConfigurations.configSet.Where(kvp => kvp.Value.childKeys?.Length == 0).Select(kvp => kvp.Key).ToArray();
                 _guiContent = _keychains.Select(bc => new GUIContent(bc)).ToArray();
                 _options = Enumerable.Range(0, _keychains.Length).ToArray();
             }
