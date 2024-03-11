@@ -77,13 +77,25 @@ namespace SuperUnityBuild.BuildActions {
 
             ProcessStartInfo startInfo;
             if(Environment.OSVersion.Platform == PlatformID.Win32NT) {
-                startInfo = new ProcessStartInfo {
-                    FileName = "wsl",
-                    Arguments = $"/bin/bash {inScriptPath} {inArguments}",
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                };
+                if(inScriptPath.EndsWith(".bat")) {
+                    startInfo = new ProcessStartInfo
+                    {
+                        FileName = "cmd.exe",
+                        Arguments = $"/c {inScriptPath} {inArguments}",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                    };
+                }
+                else {
+                    startInfo = new ProcessStartInfo {
+                        FileName = "wsl",
+                        Arguments = $"/bin/bash {inScriptPath} {inArguments}",
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                    };
+                }
             }
             else {
                 startInfo = new ProcessStartInfo {
