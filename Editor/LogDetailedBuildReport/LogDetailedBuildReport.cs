@@ -24,15 +24,15 @@ namespace SuperUnityBuild.BuildActions
                 return;
             }
 
-            var logDirectory = Path.Combine(EditorApplication.applicationPath, "BuildLogs");
+            var logDirectory = Path.Combine(Application.dataPath, "..", "BuildLogs");
             Directory.CreateDirectory(logDirectory);
 
             var summaryPath = Path.Combine(logDirectory, "BuildSummary.txt");
             File.WriteAllText(summaryPath, GetSummaryString(report));
 
-            Debug.Log($"Wrote Discord build summary to: {summaryPath}");
+            Debug.Log($"Wrote build summary to: {summaryPath}");
         }
-        
+
         public static void LogLastBuildReport() {
             var report = BuildReport.GetLatestReport();
             if (report == null) {
@@ -79,20 +79,20 @@ namespace SuperUnityBuild.BuildActions
             }
 
             sb.AppendLine("Build Summary:");
-            sb.AppendLine($"Machine: {Environment.MachineName}");
-            sb.AppendLine($"Unity Version: {Application.unityVersion}");
-            sb.AppendLine($"Platform: {summary.platform}");
-            sb.AppendLine($"Output Path: {summary.outputPath}");
-            sb.AppendLine($"Start Time: {summary.buildStartedAt:G}");
-            sb.AppendLine($"End Time: {summary.buildEndedAt:G}");
-            sb.AppendLine($"Duration: {summary.totalTime:g}");
-            sb.AppendLine($"Result: {summary.result}");
+            sb.AppendLine($"- Machine: {Environment.MachineName}");
+            sb.AppendLine($"- Unity Version: {Application.unityVersion}");
+            sb.AppendLine($"- Platform: {summary.platform}");
+            sb.AppendLine($"- Output Path: {summary.outputPath}");
+            sb.AppendLine($"- Start Time: {summary.buildStartedAt:G}");
+            sb.AppendLine($"- End Time: {summary.buildEndedAt:G}");
+            sb.AppendLine($"- Duration: {summary.totalTime:g}");
+            sb.AppendLine($"- Result: {summary.result}");
 
             if (summary.totalSize > 0)
-                sb.AppendLine($"Total Size: {FormatSize(summary.totalSize)}");
+                sb.AppendLine($"- Total Size: {FormatSize(summary.totalSize)}");
 
-            sb.AppendLine($"Warnings: {summary.totalWarnings}");
-            sb.AppendLine($"Errors: {summary.totalErrors}");
+            sb.AppendLine($"- Warnings: {summary.totalWarnings}");
+            sb.AppendLine($"- Errors: {summary.totalErrors}");
 
             // Compiler or build messages
             var errorMessages = report.steps
