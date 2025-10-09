@@ -14,7 +14,8 @@ namespace SuperUnityBuild.BuildActions
 
     public sealed class LogDetailedBuildReport : BuildAction, IPostBuildPerPlatformAction {
 
-        public string DiscordWebhookUrl = string.Empty;
+        public string DiscordWebhookUrl;
+        public bool   IncludeBuildStepTimings;
 
         [System.Serializable]
         private class DiscordWebhookPayload
@@ -71,7 +72,7 @@ namespace SuperUnityBuild.BuildActions
             }
         }
 
-        static string GetSummaryString(BuildReport report)
+        string GetSummaryString(BuildReport report)
         {
             if (report == null)
                 return "No BuildReport provided.";
@@ -143,13 +144,15 @@ namespace SuperUnityBuild.BuildActions
             }
 
             // Optional build step timings
-            var buildSteps = report.steps?.Select(s => $"{s.name} ({s.duration.TotalSeconds:F1}s)").ToList();
-            if (buildSteps != null && buildSteps.Count > 0)
-            {
-                sb.AppendLine();
-                sb.AppendLine("Build Steps:");
-                foreach (var step in buildSteps)
-                    sb.AppendLine($"- {step}");
+            if(IncludeBuildStepTimings) {
+                var buildSteps = report.steps?.Select(s => $"{s.name} ({s.duration.TotalSeconds:F1}s)").ToList();
+                if (buildSteps != null && buildSteps.Count > 0)
+                {
+                    sb.AppendLine();
+                    sb.AppendLine("Build Steps:");
+                    foreach (var step in buildSteps)
+                        sb.AppendLine($"- {step}");
+                }
             }
 
             return sb.ToString();
