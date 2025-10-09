@@ -16,9 +16,10 @@ namespace SuperUnityBuild.BuildActions
 
         public string DiscordWebhookUrl = string.Empty;
 
-        [Serializable]
-        class DiscordWebhookPayload {
-            public string Content;
+        [System.Serializable]
+        private class DiscordWebhookPayload
+        {
+            public string content;
         }
 
         public override void PerBuildExecute(
@@ -43,7 +44,7 @@ namespace SuperUnityBuild.BuildActions
         }
 
         async void SendToDiscord(string message) {
-            var payload = new DiscordWebhookPayload { Content = message };
+            var payload = new DiscordWebhookPayload { content = message };
             var json = JsonUtility.ToJson(payload);
             UnityWebRequest request = new(DiscordWebhookUrl, "POST");
             var bodyRaw = Encoding.UTF8.GetBytes(json);
@@ -51,28 +52,35 @@ namespace SuperUnityBuild.BuildActions
             request.downloadHandler = new DownloadHandlerBuffer();
             request.SetRequestHeader("Content-Type", "application/json");
             var async = request.SendWebRequest();
-            async.completed += _ => {
-                if(request.result != UnityWebRequest.Result.Success) {
-                    Debug.LogError("Failed to send: " + request.error);
-                } else {
-                    Debug.Log("Log uploaded to Discord successfully");
-                }
+            async.completed += x =>
+            {
+                if(request.result != UnityWebRequest.Result.Success)
+                    Debug.LogError("[DiscordBuildReport] Failed to send: " + request.error);
+                else
+                    Debug.Log("[DiscordBuildReport] Sent to Discord successfully.");
 
                 request.Dispose();
             };
             await async;
         }
 
+        protected override void DrawProperties(SerializedObject obj) {
+            base.DrawProperties(obj);
+            if(GUILayout.Button("Test", GUILayout.ExpandWidth(true))) {
+                SendToDiscord("Test");
+            }
+        }
+
         static string GetSummaryString(BuildReport report)
         {
-            if(report == null)
-                return string.Empty;
+            if (report == null)
+                return "No BuildReport provided.";
 
             var sb = new StringBuilder();
             var summary = report.summary;
 
             // Include SuperUnityBuild BuildConstants if available
-            var buildConstantsType = FindBuildConstantsType();
+            Type buildConstantsType = FindBuildConstantsType();
             if (buildConstantsType != null)
             {
                 sb.AppendLine("Build Constants:");
@@ -80,11 +88,11 @@ namespace SuperUnityBuild.BuildActions
                 {
                     try
                     {
-                        var value = field.GetValue(null);
+                        object value = field.GetValue(null);
                         if (value == null)
                             continue;
 
-                        var strValue = value.ToString();
+                        string strValue = value.ToString();
                         if (string.IsNullOrWhiteSpace(strValue))
                             continue;
 
@@ -150,15 +158,15 @@ namespace SuperUnityBuild.BuildActions
         private static Type FindBuildConstantsType()
         {
             // Try to find the MonoScript via AssetDatabase
-            var guids = AssetDatabase.FindAssets("BuildConstants t:MonoScript");
-            foreach (var guid in guids)
+            string[] guids = AssetDatabase.FindAssets("BuildConstants t:MonoScript");
+            foreach (string guid in guids)
             {
-                var path = AssetDatabase.GUIDToAssetPath(guid);
-                var script = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
+                string path = AssetDatabase.GUIDToAssetPath(guid);
+                MonoScript script = AssetDatabase.LoadAssetAtPath<MonoScript>(path);
                 if (script == null)
                     continue;
 
-                var type = script.GetClass();
+                Type type = script.GetClass();
                 if (type != null && type.Name == "BuildConstants")
                     return type;
             }
@@ -174,7 +182,7 @@ namespace SuperUnityBuild.BuildActions
         {
             string[] sizes = { "B", "KB", "MB", "GB" };
             double len = bytes;
-            var order = 0;
+            int order = 0;
             while (len >= 1024 && order < sizes.Length - 1)
             {
                 order++;
