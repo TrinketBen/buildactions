@@ -15,7 +15,9 @@ namespace SuperUnityBuild.BuildActions
     public sealed class LogDetailedBuildReport : BuildAction, IPostBuildPerPlatformAction {
 
         public string DiscordWebhookUrl;
+        public bool   IncludeBuildConstants;
         public bool   IncludeBuildStepTimings;
+        public bool   PostReportForSuccessfulBuild;
 
         [System.Serializable]
         private class DiscordWebhookPayload
@@ -45,6 +47,10 @@ namespace SuperUnityBuild.BuildActions
         }
 
         async void SendToDiscord(string message) {
+            if (string.IsNullOrEmpty(message)) {
+                return;
+            }
+
             var payload = new DiscordWebhookPayload { content = message };
             var json = JsonUtility.ToJson(payload);
             UnityWebRequest request = new(DiscordWebhookUrl, "POST");
@@ -67,45 +73,52 @@ namespace SuperUnityBuild.BuildActions
 
         protected override void DrawProperties(SerializedObject obj) {
             base.DrawProperties(obj);
-            if(GUILayout.Button("Test", GUILayout.ExpandWidth(true))) {
-                SendToDiscord("Test");
+            if(GUILayout.Button("Test webhook", GUILayout.ExpandWidth(true))) {
+                SendToDiscord($"Test message from {nameof(LogDetailedBuildReport)}");
             }
         }
 
         string GetSummaryString(BuildReport report)
         {
-            if (report == null)
-                return "No BuildReport provided.";
+            if(report == null) {
+                return string.Empty;
+            }
+            if(!PostReportForSuccessfulBuild && report.summary.result == BuildResult.Succeeded) {
+                return string.Empty;
+            }
 
             var sb = new StringBuilder();
             var summary = report.summary;
 
             // Include SuperUnityBuild BuildConstants if available
-            Type buildConstantsType = FindBuildConstantsType();
-            if (buildConstantsType != null)
+            if (IncludeBuildConstants)
             {
-                sb.AppendLine("Build Constants:");
-                foreach (var field in buildConstantsType.GetFields(BindingFlags.Public | BindingFlags.Static))
+                Type buildConstantsType = FindBuildConstantsType();
+                if (buildConstantsType != null)
                 {
-                    try
+                    sb.AppendLine("Build Constants:");
+                    foreach (var field in buildConstantsType.GetFields(BindingFlags.Public | BindingFlags.Static))
                     {
-                        object value = field.GetValue(null);
-                        if (value == null)
-                            continue;
+                        try
+                        {
+                            object value = field.GetValue(null);
+                            if (value == null)
+                                continue;
 
-                        string strValue = value.ToString();
-                        if (string.IsNullOrWhiteSpace(strValue))
-                            continue;
+                            string strValue = value.ToString();
+                            if (string.IsNullOrWhiteSpace(strValue))
+                                continue;
 
-                        sb.AppendLine($"- {field.Name}: {strValue}");
+                            sb.AppendLine($"- {field.Name}: {strValue}");
+                        }
+                        catch
+                        {
+                            // Ignore any inaccessible or problematic fields
+                        }
                     }
-                    catch
-                    {
-                        // Ignore any inaccessible or problematic fields
-                    }
+
+                    sb.AppendLine();
                 }
-
-                sb.AppendLine();
             }
 
             sb.AppendLine("Build Summary:");
@@ -144,7 +157,8 @@ namespace SuperUnityBuild.BuildActions
             }
 
             // Optional build step timings
-            if(IncludeBuildStepTimings) {
+            if (IncludeBuildStepTimings)
+            {
                 var buildSteps = report.steps?.Select(s => $"{s.name} ({s.duration.TotalSeconds:F1}s)").ToList();
                 if (buildSteps != null && buildSteps.Count > 0)
                 {
@@ -158,7 +172,7 @@ namespace SuperUnityBuild.BuildActions
             return sb.ToString();
         }
 
-        private static Type FindBuildConstantsType()
+        static Type FindBuildConstantsType()
         {
             // Try to find the MonoScript via AssetDatabase
             string[] guids = AssetDatabase.FindAssets("BuildConstants t:MonoScript");
