@@ -5,6 +5,7 @@ using UnityEditor;
 
 namespace SuperUnityBuild.BuildActions
 {
+    using buildactions.Editor;
     using Operation = FileUtility.Operation;
 
     public class FolderOperation : BuildAction, IPreBuildAction, IPreBuildPerPlatformAction, IPostBuildAction, IPostBuildPerPlatformAction, IPreBuildPerPlatformActionCanConfigureEditor
@@ -36,8 +37,31 @@ namespace SuperUnityBuild.BuildActions
             EditorGUILayout.PropertyField(obj.FindProperty("operation"));
             EditorGUILayout.PropertyField(obj.FindProperty("inputPath"));
 
-            if (operation != Operation.Delete)
+            if (operation != Operation.Delete) {
                 EditorGUILayout.PropertyField(obj.FindProperty("outputPath"));
+            }
+
+            BuildActionStaticUtilities.DrawTestButton(x => {
+                var resolvedInputPath = FileUtility.ResolvePerBuildPath(inputPath,
+                    x.ReleaseType,
+                    x.Platform,
+                    x.Architecture,
+                    x.ScriptingBackend,
+                    x.Distribution,
+                    DateTime.Now,
+                    string.Empty
+                );
+                var resolvedOutputPath = FileUtility.ResolvePerBuildPath(outputPath,
+                    x.ReleaseType,
+                    x.Platform,
+                    x.Architecture,
+                    x.ScriptingBackend,
+                    x.Distribution,
+                    DateTime.Now,
+                    string.Empty
+                );
+                PerformOperation(resolvedInputPath, resolvedOutputPath);
+            });
         }
 
         private void PerformOperation(string inputPath, string outputPath)

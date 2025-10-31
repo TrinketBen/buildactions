@@ -7,17 +7,13 @@ using UnityEditor;
 using UnityEngine;
 
 namespace SuperUnityBuild.BuildActions {
+    using buildactions.Editor;
+
     public class ScriptRunner : BuildAction, IPreBuildAction, IPreBuildPerPlatformAction, IPostBuildAction, IPostBuildPerPlatformAction, IPreBuildPerPlatformActionCanConfigureEditor {
         [BuildTool.FilePath(false, true, "Select program/script to run.")]
         public string scriptPath = "";
 
         public string scriptArguments = "";
-
-        string[] _keychains;
-        int _selectedKeychainIndex;
-        GUIContent[] _guiContent;
-        int[] _options;
-
 
         public override void Execute() {
             RunScript(scriptPath, scriptArguments);
@@ -31,39 +27,26 @@ namespace SuperUnityBuild.BuildActions {
             RunScript(resolvedScriptPath, resolvedScriptArgs);
         }
 
-
-
         protected override void DrawProperties(SerializedObject obj) {
-            base.DrawProperties(obj);
-
-            if(_keychains == null) {
-                _keychains = BuildSettings.projectConfigurations.configSet.Where(kvp => kvp.Value.childKeys?.Length == 0).Select(kvp => kvp.Key).ToArray();
-                _guiContent = _keychains.Select(bc => new GUIContent(bc)).ToArray();
-                _options = Enumerable.Range(0, _keychains.Length).ToArray();
-            }
-
-            EditorGUILayout.BeginHorizontal();
-
-            _selectedKeychainIndex = EditorGUILayout.IntPopup(_selectedKeychainIndex, _guiContent, _options);
-
-            GUI.enabled = _selectedKeychainIndex >= 0;
-            if(GUILayout.Button("Test", GUILayout.ExpandWidth(true))) {
-                BuildReleaseType releaseType;
-                BuildPlatform platform;
-                BuildArchitecture architecture;
-                BuildDistribution distribution;
-                BuildScriptingBackend scriptingBackend;
-                var configKey = _keychains[_selectedKeychainIndex];
-
-                BuildSettings.projectConfigurations.ParseKeychain(configKey, out releaseType, out platform, out architecture, out scriptingBackend, out distribution);
-
-                var resolvedScriptPath = BuildProject.ResolvePath(scriptPath, releaseType, platform, architecture, scriptingBackend, distribution, DateTime.Now);
-                var resolvedScriptArgs = BuildProject.ResolvePath(scriptArguments, releaseType, platform, architecture, scriptingBackend, distribution, DateTime.Now);
+            BuildActionStaticUtilities.DrawTestButton(x => {
+                var resolvedScriptPath = BuildProject.ResolvePath(scriptPath,
+                    x.ReleaseType,
+                    x.Platform,
+                    x.Architecture,
+                    x.ScriptingBackend,
+                    x.Distribution,
+                    DateTime.Now
+                );
+                var resolvedScriptArgs = BuildProject.ResolvePath(scriptArguments,
+                    x.ReleaseType,
+                    x.Platform,
+                    x.Architecture,
+                    x.ScriptingBackend,
+                    x.Distribution,
+                    DateTime.Now
+                );
                 RunScript(resolvedScriptPath, resolvedScriptArgs);
-
-            }
-
-            EditorGUILayout.EndHorizontal();
+            });
         }
 
         void RunScript(string inScriptPath, string inArguments) {
@@ -71,7 +54,7 @@ namespace SuperUnityBuild.BuildActions {
                 UnityEngine.Debug.LogError("Empty script path!");
                 return;
             }
-            
+
             inScriptPath = Path.GetFullPath(inScriptPath).Replace('\\', '/');;
             UnityEngine.Debug.Log($"About to start process {inScriptPath} with arguments: {inArguments}");
 
@@ -111,17 +94,17 @@ namespace SuperUnityBuild.BuildActions {
                 using var process = new Process();
                 process.StartInfo = startInfo;
                 process.Start();
-                
+
                 var output = process.StandardOutput.ReadToEnd();
                 var error  = process.StandardError.ReadToEnd();
                 if(!string.IsNullOrEmpty(output))
                     UnityEngine.Debug.Log(output);
                 if(!string.IsNullOrEmpty(error))
                     UnityEngine.Debug.Log(error);
-                    
+
                 process.WaitForExit();
-                
-                
+
+
             } catch(Exception exception) {
                 UnityEngine.Debug.LogException(exception);
             }
