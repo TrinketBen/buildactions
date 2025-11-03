@@ -7,6 +7,8 @@ using UnityEngine;
 
 namespace SuperUnityBuild.BuildActions
 {
+    using buildactions.Editor;
+
     public sealed class BuildAssetBundles : BuildAction, IPreBuildPerPlatformAction
     {
         #region Public Variables
@@ -59,6 +61,10 @@ namespace SuperUnityBuild.BuildActions
 
             if (GUILayout.Button("Run Now", GUILayout.ExpandWidth(true)))
                 BuildAll();
+
+            BuildActionStaticUtilities.DrawTestButton(x => {
+                Build(x.Platform, x.Architecture);
+            });
         }
 
         #endregion
