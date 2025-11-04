@@ -38,15 +38,18 @@ namespace SuperUnityBuild.BuildActions
                 return;
             }
 
+#if UNITY_2022_3_OR_NEWER
             var report = BuildReport.GetLatestReport();
             if (report == null) {
                 return;
             }
 
             SendToDiscord(GetSummaryString(report));
+#endif
         }
 
         async void SendToDiscord(string message) {
+#if UNITY_2022_3_OR_NEWER
             if (string.IsNullOrEmpty(message)) {
                 return;
             }
@@ -69,6 +72,7 @@ namespace SuperUnityBuild.BuildActions
                 request.Dispose();
             };
             await async;
+#endif
         }
 
         protected override void DrawProperties(SerializedObject obj) {
