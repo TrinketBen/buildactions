@@ -25,7 +25,7 @@
         public static void DrawTestButton(Action<BuildKeychain> inAction)
         {
             if(!(_keychains?.Any()).GetValueOrDefault()) {
-                _keychains  = BuildSettings.projectConfigurations.configSet.Where(kvp => kvp.Value.childKeys?.Length == 0).Select(kvp => kvp.Key).ToArray();
+                _keychains  = BuildSettings.projectConfigurations.configSet.Where(kvp => kvp.Value.childKeys == null || kvp.Value.childKeys.Length == 0).Select(kvp => kvp.Key).ToArray();
                 _guiContent = _keychains.Select(bc => new GUIContent(bc)).ToArray();
                 _options    = Enumerable.Range(0, _keychains.Length).ToArray();
             }
