@@ -49,7 +49,7 @@ namespace SuperUnityBuild.BuildActions
         }
 
         async void SendToDiscord(string message) {
-#if UNITY_2022_3_OR_NEWER
+#if UNITY_2023_1_OR_NEWER
             if (string.IsNullOrEmpty(message)) {
                 return;
             }
