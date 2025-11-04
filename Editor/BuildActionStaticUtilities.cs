@@ -24,11 +24,21 @@
 
         public static void DrawTestButton(Action<BuildKeychain> inAction)
         {
-            if(!(_keychains?.Any()).GetValueOrDefault()) {
-                _keychains  = BuildSettings.projectConfigurations.configSet.Where(kvp => kvp.Value.childKeys == null || kvp.Value.childKeys.Length == 0).Select(kvp => kvp.Key).ToArray();
-                _guiContent = _keychains.Select(bc => new GUIContent(bc)).ToArray();
-                _options    = Enumerable.Range(0, _keychains.Length).ToArray();
+            void RefreshKeychains()
+            {
+                if (!(_keychains?.Any()).GetValueOrDefault())
+                {
+                    _keychains = BuildSettings.projectConfigurations.configSet
+                        .Where(kvp => kvp.Value.childKeys == null || kvp.Value.childKeys.Length == 0)
+                        .Select(kvp => kvp.Key).ToArray();
+                    _guiContent = _keychains.Select(bc => new GUIContent(bc)).ToArray();
+                    _options = Enumerable.Range(0, _keychains.Length).ToArray();
+                }
             }
+
+            RefreshKeychains();
+
+            EditorGUILayout.BeginVertical();
 
             EditorGUILayout.BeginHorizontal();
 
@@ -52,6 +62,16 @@
             }
 
             EditorGUILayout.EndHorizontal();
+
+            if (GUILayout.Button("Refresh keychains", GUILayout.ExpandWidth(true)))
+            {
+                _keychains = null;
+                _guiContent = null;
+                _options = null;
+                RefreshKeychains();
+            }
+
+            EditorGUILayout.EndVertical();
 
             GUI.enabled = wasEnabled;
         }
