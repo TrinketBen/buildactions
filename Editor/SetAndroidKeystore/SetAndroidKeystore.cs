@@ -7,10 +7,10 @@ namespace SuperUnityBuild.BuildActions
 {
     public sealed class SetAndroidKeystore : BuildAction, IPreBuildPerPlatformAction
     {
-        string androidKeystorePath     = "ANDROID_KEYSTORE_PATH";
-        string androidKeystorePassword = "ANDROID_KEYSTORE_PASSWORD";
-        string androidKeyAlias         = "ANDROID_KEY_ALIAS";
-        string androidKeyPassword      = "ANDROID_KEY_PASSWORD";
+        public string androidKeystorePath     = "ANDROID_KEYSTORE_PATH";
+        public string androidKeystorePassword = "ANDROID_KEYSTORE_PASSWORD";
+        public string androidKeyAlias         = "ANDROID_KEY_ALIAS";
+        public string androidKeyPassword      = "ANDROID_KEY_PASSWORD";
 
         public override void PerBuildExecute(
             BuildReleaseType releaseType,
