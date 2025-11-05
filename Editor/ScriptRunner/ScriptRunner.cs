@@ -28,6 +28,7 @@ namespace SuperUnityBuild.BuildActions {
         }
 
         protected override void DrawProperties(SerializedObject obj) {
+            base.DrawProperties(obj);
             BuildActionStaticUtilities.DrawTestButton(x => {
                 var resolvedScriptPath = BuildProject.ResolvePath(scriptPath,
                     x.ReleaseType,
