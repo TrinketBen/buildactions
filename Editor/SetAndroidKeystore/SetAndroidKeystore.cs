@@ -1,10 +1,13 @@
 ﻿using SuperUnityBuild.BuildTool;
 using System;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 
 namespace SuperUnityBuild.BuildActions
 {
+    using System.Collections;
+
     public sealed class SetAndroidKeystore : BuildAction, IPreBuildPerPlatformAction
     {
         public string androidKeystorePath     = "ANDROID_KEYSTORE_PATH";
@@ -38,6 +41,21 @@ namespace SuperUnityBuild.BuildActions
 
         void SetKeystoreInfo()
         {
+            var environmentVariables = Environment.GetEnvironmentVariables();
+            string compressedReport = string.Join(
+                Environment.NewLine,
+                environmentVariables
+                    .Cast<DictionaryEntry>()
+                    .Select(entry => $"{entry.Key}: {entry.Value}")
+            );
+            Debug.Log(
+                "Environment Variables:" +
+                Environment.NewLine +
+                compressedReport +
+                Environment.NewLine +
+                "-- End Environment Variables ---"
+            );
+
             string keystorePath = Environment.GetEnvironmentVariable(androidKeystorePath);
             string keystorePass = Environment.GetEnvironmentVariable(androidKeystorePassword);
             string keyAlias     = Environment.GetEnvironmentVariable(androidKeyAlias);
