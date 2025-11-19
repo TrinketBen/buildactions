@@ -46,8 +46,8 @@ namespace SuperUnityBuild.BuildActions {
                     x.Distribution,
                     DateTime.Now
                 );
-                scriptArguments = scriptArguments.Replace("$BUILDPATH", buildPath);
-                var resolvedScriptArgs = BuildProject.ResolvePath(scriptArguments,
+                var resolvedScriptArgs = scriptArguments.Replace("$BUILDPATH", buildPath);
+                resolvedScriptArgs = BuildProject.ResolvePath(resolvedScriptArgs,
                     x.ReleaseType,
                     x.Platform,
                     x.Architecture,
