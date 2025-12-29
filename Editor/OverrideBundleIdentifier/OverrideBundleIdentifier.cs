@@ -8,7 +8,6 @@ namespace SuperUnityBuild.BuildActions
     public sealed class OverrideBundleIdentifier : BuildAction, IPreBuildPerPlatformAction
     {
         public string           bundleIdentifier = string.Empty;
-        public BuildTargetGroup buildTarget = BuildTargetGroup.Unknown;
 
         public override void PerBuildExecute(
             BuildReleaseType releaseType,
@@ -18,9 +17,7 @@ namespace SuperUnityBuild.BuildActions
             BuildDistribution distribution,
             DateTime buildTime, ref BuildOptions options, string configKey, string buildPath)
         {
-            if(platform.targetGroup == buildTarget) {
-                PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.FromBuildTargetGroup(buildTarget), bundleIdentifier);
-            }
+            PlayerSettings.SetApplicationIdentifier(NamedBuildTarget.FromBuildTargetGroup(platform.targetGroup), bundleIdentifier);
         }
 
         protected override void DrawProperties(SerializedObject obj)
@@ -28,7 +25,6 @@ namespace SuperUnityBuild.BuildActions
             if (obj != null)
             {
                 EditorGUILayout.PropertyField(obj.FindProperty("bundleIdentifier"));
-                EditorGUILayout.PropertyField(obj.FindProperty("buildTarget"));
             }
         }
     }
