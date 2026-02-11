@@ -46,5 +46,25 @@ namespace SuperUnityBuild.BuildActions
 
             Debug.Log($"[OverrideScenesAction] Successfully swapped build list to {newSettings.Length} scenes.");
         }
+
+        protected override void DrawProperties(SerializedObject obj) {
+            base.DrawProperties(obj);
+            if(GUILayout.Button("Copy scenes from Editor Build Settings", GUILayout.ExpandWidth(true))) {
+                Undo.RecordObject(this, "Copy scenes from Editor Build Settings");
+
+                _scenesOverride.Clear();
+                foreach(var scene in EditorBuildSettings.scenes) {
+                    if(scene.enabled && !string.IsNullOrEmpty(scene.path)) {
+                        var asset = AssetDatabase.LoadAssetAtPath<SceneAsset>(scene.path);
+                        if(asset != null) {
+                            _scenesOverride.Add(asset);
+                        }
+                    }
+                }
+
+                EditorUtility.SetDirty(this);
+                Debug.Log($"Imported {_scenesOverride.Count} scenes from Build Settings.");
+            }
+        }
     }
 }
