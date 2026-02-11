@@ -38,14 +38,16 @@ namespace SuperUnityBuild.BuildActions
                 return;
             }
 
+            BuildReport report = null;
+            
 #if UNITY_2023_1_OR_NEWER
-            var report = BuildReport.GetLatestReport();
+            report = BuildReport.GetLatestReport();
+#endif
             if (report == null) {
                 return;
             }
 
             SendToDiscord(GetSummaryString(report));
-#endif
         }
 
         async void SendToDiscord(string message) {
@@ -71,6 +73,7 @@ namespace SuperUnityBuild.BuildActions
 
                 request.Dispose();
             };
+
             await async;
 #endif
         }
